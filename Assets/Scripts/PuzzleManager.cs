@@ -7,9 +7,12 @@ public class PuzzleManager : MonoBehaviour
 {
     public static PuzzleManager Instance;
     private HashSet<string> placedCubes = new HashSet<string>();
+
     public GameObject successMessage;
-    public AudioSource winSound;
     public GameObject restartButton;
+
+    public AudioSource audioSource;   // Shared audio source
+    public AudioClip winClip;         // Specific win sound to play
 
     void Awake()
     {
@@ -31,8 +34,13 @@ public class PuzzleManager : MonoBehaviour
     void OnPuzzleCompleted()
     {
         successMessage?.SetActive(true);
-        winSound?.Play();
         restartButton?.SetActive(true);
+
+        if (audioSource && winClip)
+        {
+            audioSource.clip = winClip;
+            audioSource.Play();
+        }
     }
 
     public void RestartGame()

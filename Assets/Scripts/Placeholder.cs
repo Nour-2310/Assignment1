@@ -5,26 +5,43 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class Placeholder : MonoBehaviour
 {
-    public string acceptedTag;
-    public AudioSource buzzSound;
+    public string acceptedTag;           // e.g. "Red", "Green", "Blue"
+    public AudioSource audioSource;      // Shared AudioSource
+    public AudioClip buzzClip;           // Sound to play when cube is wrong
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
+        // If the cube matches the correct tag (correct color)
         if (other.CompareTag(acceptedTag))
         {
-            // Correct cube
-            var grab = other.GetComponent<XRGrabInteractable>();
+            // Lock it in place
+            XRGrabInteractable grab = other.GetComponent<XRGrabInteractable>();
             if (grab) grab.enabled = false;
 
-            other.GetComponent<Rigidbody>().isKinematic = true;
+            Rigidbody rb = other.GetComponent<Rigidbody>();
+            if (rb) rb.isKinematic = true;
+
+            // Snap to placeholder position
             other.transform.position = transform.position;
+
+            // Notify PuzzleManager
             PuzzleManager.Instance.MarkCubePlaced(acceptedTag);
         }
         else
         {
-            // Wrong cube
-            buzzSound?.Play();
-            other.transform.position = other.GetComponent<ResetPosition>().originalPosition;
+            // Play buzz sound for wrong placement
+            if (audioSource && buzzClip)
+            {
+                audioSource.clip = buzzClip;
+                audioSource.Play();
+            }
+
+            // Reset cube to original position
+            ResetPosition reset = other.GetComponent<ResetPosition>();
+            if (reset != null)
+            {
+                other.transform.position = reset.originalPosition;
+            }
         }
     }
 }
